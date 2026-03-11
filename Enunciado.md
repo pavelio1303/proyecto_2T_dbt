@@ -1,9 +1,5 @@
 # Proyecto T2: Sneaker Point Retail Analytics
 
-## [Enlace GitHub](https://classroom.github.com/a/PSuxbGEb)
-
----
-
 ## 1. Contexto del proyecto
 
 Sneaker Point es una cadena de tiendas físicas de zapatillas en España. La compañía dispone de una base de datos PostgreSQL operativa donde se registran productos, variantes, clientes, ventas, devoluciones, descuentos, stock, reposiciones y movimientos de inventario.
