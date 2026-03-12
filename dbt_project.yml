@@ -22,6 +22,8 @@ clean-targets:
 
 models:
   sneaker_point:
+    example:
+      +enabled: false
     silver:
       +materialized: view
       +schema: SILVER
