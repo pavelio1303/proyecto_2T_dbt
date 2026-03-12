@@ -9,3 +9,12 @@ Enunciado.md
 .gitignore
 .github/
 
+check_perms.sh
+explore_db3.py
+explore_db2.py
+explore_db.py
+check_duckdb.py
+
+ingesta/data/
+ingesta/ingest.py
+
