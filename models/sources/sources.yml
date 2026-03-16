@@ -1,0 +1,262 @@
+version: 2
+
+sources:
+  - name: raw
+    description: "Capa Landing – tablas ingeridas desde PostgreSQL via CSV y cargadas en Snowflake. Sin transformación."
+    database: PROYECTO_2T
+    schema: RAW
+    tables:
+
+      - name: brands
+        description: "Marcas de calzado disponibles en el catálogo."
+        columns:
+          - name: brand_id
+            description: "PK de la marca."
+            tests: [not_null, unique]
+          - name: brand_name
+            description: "Nombre comercial de la marca."
+            tests: [not_null]
+
+      - name: categories
+        description: "Categorías de producto (jerarquía con auto-referencia via parent_category_id)."
+        columns:
+          - name: category_id
+            tests: [not_null, unique]
+          - name: category_code
+            tests: [not_null, unique]
+
+      - name: stores
+        description: "Tiendas físicas de Sneaker Point en España."
+        columns:
+          - name: store_id
+            tests: [not_null, unique]
+          - name: store_code
+            tests: [not_null, unique]
+          - name: status
+            tests:
+              - accepted_values:
+                  values: ['active', 'closed', 'temporarily_closed']
+
+      - name: store_business_hours
+        description: "Horarios de apertura por tienda y día de la semana (ISO weekday: 1=Lunes, 7=Domingo)."
+        columns:
+          - name: store_id
+            tests: [not_null]
+          - name: weekday_iso
+            tests: [not_null]
+
+      - name: employees
+        description: "Empleados activos e históricos de cada tienda."
+        columns:
+          - name: employee_id
+            tests: [not_null, unique]
+          - name: store_id
+            tests:
+              - not_null
+              - relationships:
+                  to: source('raw', 'stores')
+                  field: store_id
+
+      - name: suppliers
+        description: "Proveedores de producto."
+        columns:
+          - name: supplier_id
+            tests: [not_null, unique]
+
+      - name: products
+        description: "Productos del catálogo (nivel modelo, sin variantes)."
+        columns:
+          - name: product_id
+            tests: [not_null, unique]
+          - name: product_code
+            tests: [not_null, unique]
+          - name: brand_id
+            tests:
+              - not_null
+              - relationships:
+                  to: source('raw', 'brands')
+                  field: brand_id
+          - name: category_id
+            tests:
+              - not_null
+              - relationships:
+                  to: source('raw', 'categories')
+                  field: category_id
+
+      - name: product_variants
+        description: "Variantes de producto: combinación única de producto + color + talla."
+        columns:
+          - name: product_variant_id
+            tests: [not_null, unique]
+          - name: variant_sku
+            tests: [not_null, unique]
+          - name: product_id
+            tests:
+              - not_null
+              - relationships:
+                  to: source('raw', 'products')
+                  field: product_id
+
+      - name: customers
+        description: "Clientes registrados en el programa de fidelización."
+        columns:
+          - name: customer_id
+            tests: [not_null, unique]
+          - name: customer_code
+            tests: [not_null, unique]
+          - name: status
+            tests:
+              - accepted_values:
+                  values: ['active', 'inactive', 'banned']
+
+      - name: discounts
+        description: "Campañas y descuentos configurados."
+        columns:
+          - name: discount_id
+            tests: [not_null, unique]
+          - name: discount_type
+            tests:
+              - accepted_values:
+                  values: ['percentage', 'fixed_amount']
+          - name: scope
+            tests:
+              - accepted_values:
+                  values: ['global', 'store', 'category', 'product', 'customer']
+
+      - name: discount_categories
+        description: "Relación N:M entre descuentos y categorías de producto."
+
+      - name: discount_stores
+        description: "Relación N:M entre descuentos y tiendas."
+
+      - name: inventory_stock
+        description: "Stock actual por tienda y variante de producto."
+        columns:
+          - name: store_id
+            tests: [not_null]
+          - name: product_variant_id
+            tests: [not_null]
+
+      - name: sales
+        description: "Cabecera de ventas (una fila por ticket de venta)."
+        columns:
+          - name: sale_id
+            tests: [not_null, unique]
+          - name: sale_number
+            tests: [not_null, unique]
+          - name: store_id
+            tests:
+              - not_null
+              - relationships:
+                  to: source('raw', 'stores')
+                  field: store_id
+          - name: status
+            tests:
+              - accepted_values:
+                  values: ['paid', 'cancelled', 'refunded', 'partially_refunded']
+
+      - name: sale_items
+        description: "Líneas de venta: una fila por variante dentro de un ticket."
+        columns:
+          - name: sale_item_id
+            tests: [not_null, unique]
+          - name: sale_id
+            tests:
+              - not_null
+              - relationships:
+                  to: source('raw', 'sales')
+                  field: sale_id
+          - name: product_variant_id
+            tests:
+              - not_null
+              - relationships:
+                  to: source('raw', 'product_variants')
+                  field: product_variant_id
+
+      - name: sale_item_discounts
+        description: "Descuentos aplicados a cada línea de venta."
+        columns:
+          - name: sale_item_discount_id
+            tests: [not_null, unique]
+
+      - name: payments
+        description: "Pagos asociados a cada venta (puede haber split payment)."
+        columns:
+          - name: payment_id
+            tests: [not_null, unique]
+          - name: sale_id
+            tests:
+              - not_null
+              - relationships:
+                  to: source('raw', 'sales')
+                  field: sale_id
+          - name: payment_method
+            tests:
+              - accepted_values:
+                  values: ['cash', 'card', 'bizum', 'voucher', 'mixed']
+
+      - name: returns
+        description: "Cabecera de devoluciones."
+        columns:
+          - name: return_id
+            tests: [not_null, unique]
+          - name: return_number
+            tests: [not_null, unique]
+          - name: sale_id
+            tests:
+              - not_null
+              - relationships:
+                  to: source('raw', 'sales')
+                  field: sale_id
+
+      - name: return_items
+        description: "Líneas de devolución: variantes devueltas por retorno."
+        columns:
+          - name: return_item_id
+            tests: [not_null, unique]
+          - name: return_id
+            tests:
+              - not_null
+              - relationships:
+                  to: source('raw', 'returns')
+                  field: return_id
+
+      - name: refunds
+        description: "Reembolsos monetarios asociados a devoluciones."
+        columns:
+          - name: refund_id
+            tests: [not_null, unique]
+          - name: return_id
+            tests:
+              - not_null
+              - relationships:
+                  to: source('raw', 'returns')
+                  field: return_id
+
+      - name: stock_movements
+        description: "Registro de todos los movimientos de stock (ventas, devoluciones, reposiciones, ajustes)."
+        columns:
+          - name: stock_movement_id
+            tests: [not_null, unique]
+          - name: movement_type
+            tests:
+              - accepted_values:
+                  values: ['sale', 'return', 'purchase_receipt', 'adjustment', 'transfer_in', 'transfer_out']
+
+      - name: purchase_orders
+        description: "Pedidos a proveedores para reposición de stock."
+        columns:
+          - name: purchase_order_id
+            tests: [not_null, unique]
+          - name: po_number
+            tests: [not_null, unique]
+          - name: status
+            tests:
+              - accepted_values:
+                  values: ['draft', 'confirmed', 'received', 'cancelled']
+
+      - name: purchase_order_items
+        description: "Líneas de pedido a proveedor."
+        columns:
+          - name: purchase_order_item_id
+            tests: [not_null, unique]

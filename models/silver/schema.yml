@@ -1,0 +1,409 @@
+version: 2
+
+models:
+
+  - name: stg_brands
+    description: "Marcas de calzado. Limpieza de espacios y normalización de country_code a mayúsculas."
+    columns:
+      - name: brand_id
+        description: "PK de la marca."
+        tests: [not_null, unique]
+      - name: brand_name
+        description: "Nombre comercial de la marca (sin espacios extra)."
+        tests: [not_null]
+      - name: country_code
+        description: "Código ISO-2 del país de origen de la marca."
+
+  - name: stg_categories
+    description: "Categorías de producto con jerarquía (parent_category_id permite árbol). Añadida columna is_root_category."
+    columns:
+      - name: category_id
+        tests: [not_null, unique]
+      - name: category_code
+        description: "Código normalizado de la categoría (mayúsculas)."
+        tests: [not_null, unique]
+      - name: is_root_category
+        description: "TRUE si la categoría no tiene padre (nivel raíz)."
+
+  - name: stg_stores
+    description: "Tiendas físicas de Sneaker Point en España. Añadida columna is_active derivada de status + closed_on."
+    columns:
+      - name: store_id
+        tests: [not_null, unique]
+      - name: store_code
+        tests: [not_null, unique]
+      - name: status
+        description: "Estado de la tienda: active, closed, temporarily_closed."
+        tests:
+          - accepted_values:
+              values: ['active', 'closed', 'temporarily_closed']
+      - name: is_active
+        description: "TRUE si la tienda está activa y no tiene fecha de cierre."
+
+  - name: stg_store_business_hours
+    description: "Horarios operativos por tienda y día ISO (1=Lunes … 7=Domingo). Añadida columna weekday_name en español."
+    columns:
+      - name: store_id
+        tests: [not_null]
+      - name: weekday_iso
+        description: "Día de la semana ISO: 1=Lunes, 7=Domingo."
+        tests:
+          - not_null
+          - accepted_values:
+              values: [1, 2, 3, 4, 5, 6, 7]
+      - name: weekday_name
+        description: "Nombre del día en español."
+      - name: is_open
+        description: "TRUE si la tienda opera ese día."
+
+  - name: stg_employees
+    description: "Empleados activos e históricos por tienda. Añadida full_name e is_currently_active."
+    columns:
+      - name: employee_id
+        tests: [not_null, unique]
+      - name: employee_code
+        tests: [not_null, unique]
+      - name: store_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_stores')
+              field: store_id
+      - name: role
+        description: "Rol del empleado (normalizado a minúsculas)."
+      - name: is_currently_active
+        description: "TRUE si el empleado está activo y sin fecha de baja."
+
+  - name: stg_suppliers
+    description: "Proveedores de producto. Normalización de email a minúsculas y códigos a mayúsculas."
+    columns:
+      - name: supplier_id
+        tests: [not_null, unique]
+      - name: supplier_code
+        tests: [not_null, unique]
+
+  - name: stg_products
+    description: "Productos del catálogo (nivel modelo). Normalización de target_gender al español."
+    columns:
+      - name: product_id
+        tests: [not_null, unique]
+      - name: product_code
+        tests: [not_null, unique]
+      - name: brand_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_brands')
+              field: brand_id
+      - name: category_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_categories')
+              field: category_id
+      - name: target_gender
+        description: "Género objetivo normalizado: Hombre, Mujer, Unisex, Niños, No definido."
+
+  - name: stg_product_variants
+    description: "Variantes de producto (producto + color + talla). Añadidos gross_margin y gross_margin_pct."
+    columns:
+      - name: product_variant_id
+        tests: [not_null, unique]
+      - name: variant_sku
+        description: "SKU único de la variante."
+        tests: [not_null, unique]
+      - name: product_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_products')
+              field: product_id
+      - name: size_eu
+        description: "Talla europea."
+        tests: [not_null]
+      - name: list_price
+        description: "Precio de venta al público."
+        tests: [not_null]
+      - name: gross_margin
+        description: "Margen bruto unitario = list_price - unit_cost."
+      - name: gross_margin_pct
+        description: "Porcentaje de margen sobre PVP."
+
+  - name: stg_customers
+    description: "Clientes registrados. Normalización de género al español, email a minúsculas y full_name generado."
+    columns:
+      - name: customer_id
+        tests: [not_null, unique]
+      - name: customer_code
+        tests: [not_null, unique]
+      - name: status
+        tests:
+          - accepted_values:
+              values: ['active', 'inactive', 'banned']
+      - name: gender
+        description: "Género normalizado: Hombre, Mujer, No especificado."
+      - name: marketing_opt_in
+        description: "TRUE si el cliente acepta comunicaciones de marketing."
+      - name: loyalty_points
+        description: "Puntos de fidelización acumulados."
+
+  - name: stg_discounts
+    description: "Campañas de descuento. Tipos y scopes normalizados a minúsculas."
+    columns:
+      - name: discount_id
+        tests: [not_null, unique]
+      - name: discount_type
+        tests:
+          - accepted_values:
+              values: ['percentage', 'fixed_amount']
+      - name: scope
+        tests:
+          - accepted_values:
+              values: ['global', 'store', 'category', 'product', 'customer']
+      - name: value_amount
+        description: "Valor del descuento: porcentaje (0-100) o importe fijo en euros."
+        tests: [not_null]
+
+  - name: stg_discount_categories
+    description: "Relación N:M entre descuentos y categorías de producto."
+    columns:
+      - name: discount_id
+        tests: [not_null]
+      - name: category_id
+        tests: [not_null]
+
+  - name: stg_discount_stores
+    description: "Relación N:M entre descuentos y tiendas."
+    columns:
+      - name: discount_id
+        tests: [not_null]
+      - name: store_id
+        tests: [not_null]
+
+  - name: stg_inventory_stock
+    description: >
+      Stock actual por tienda y variante de producto. Añadidas columnas derivadas:
+      available_qty (on_hand - reserved), is_stockout y needs_reorder.
+    columns:
+      - name: store_id
+        tests: [not_null]
+      - name: product_variant_id
+        tests: [not_null]
+      - name: on_hand_qty
+        description: "Unidades físicamente en tienda."
+      - name: reserved_qty
+        description: "Unidades reservadas (ventas en proceso no confirmadas)."
+      - name: available_qty
+        description: "Unidades disponibles para venta = on_hand - reserved."
+      - name: is_stockout
+        description: "TRUE si el stock disponible es 0 o negativo."
+      - name: needs_reorder
+        description: "TRUE si el stock disponible está en o por debajo del punto de reposición."
+
+  - name: stg_sales
+    description: >
+      Cabecera de ventas. Modelo INCREMENTAL (unique_key=sale_id, filtro por updated_at).
+      Añadidas: sale_date, sale_hour, discount_pct, has_discount, is_loyalty_sale.
+      Grano: una fila por ticket de venta.
+    config:
+      materialized: incremental
+    columns:
+      - name: sale_id
+        description: "PK del ticket de venta."
+        tests: [not_null, unique]
+      - name: sale_number
+        description: "Número de ticket legible."
+        tests: [not_null, unique]
+      - name: store_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_stores')
+              field: store_id
+      - name: status
+        tests:
+          - accepted_values:
+              values: ['paid', 'refunded_partial', 'refunded_full']
+      - name: total_amount
+        description: "Importe final del ticket (subtotal - descuentos)."
+        tests: [not_null]
+      - name: is_loyalty_sale
+        description: "TRUE si la venta está asociada a un cliente del programa de fidelización."
+
+  - name: stg_sale_items
+    description: "Líneas de venta. Una fila por variante dentro de un ticket. Añadidas unit_discount_pct y has_discount."
+    columns:
+      - name: sale_item_id
+        tests: [not_null, unique]
+      - name: sale_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_sales')
+              field: sale_id
+      - name: product_variant_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_product_variants')
+              field: product_variant_id
+      - name: quantity
+        description: "Unidades vendidas."
+        tests: [not_null]
+      - name: line_total
+        description: "Importe total de la línea tras descuentos."
+        tests: [not_null]
+
+  - name: stg_sale_item_discounts
+    description: "Descuentos aplicados a cada línea de venta. Relación entre líneas y campañas."
+    columns:
+      - name: sale_item_discount_id
+        tests: [not_null, unique]
+      - name: sale_item_id
+        tests: [not_null]
+      - name: discount_id
+        tests: [not_null]
+
+  - name: stg_payments
+    description: "Pagos por venta. Puede haber múltiples métodos por ticket (split payment). Añadida payment_date."
+    columns:
+      - name: payment_id
+        tests: [not_null, unique]
+      - name: sale_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_sales')
+              field: sale_id
+      - name: payment_method
+        description: "Método de pago: cash, card, bizum, gift_card."
+        tests:
+          - accepted_values:
+              values: ['cash', 'card', 'bizum', 'gift_card']
+      - name: status
+        tests:
+          - accepted_values:
+              values: ['paid', 'pending', 'failed', 'refunded']
+      - name: amount
+        description: "Importe pagado."
+        tests: [not_null]
+
+  - name: stg_returns
+    description: "Cabecera de devoluciones. Añadida return_date. Una fila por devolución."
+    columns:
+      - name: return_id
+        tests: [not_null, unique]
+      - name: return_number
+        tests: [not_null, unique]
+      - name: sale_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_sales')
+              field: sale_id
+      - name: store_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_stores')
+              field: store_id
+      - name: status
+        tests:
+          - accepted_values:
+              values: ['refunded']
+
+  - name: stg_return_items
+    description: "Líneas de devolución. Una fila por variante devuelta dentro de una devolución."
+    columns:
+      - name: return_item_id
+        tests: [not_null, unique]
+      - name: return_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_returns')
+              field: return_id
+      - name: sale_item_id
+        tests: [not_null]
+      - name: quantity
+        description: "Unidades devueltas."
+        tests: [not_null]
+
+  - name: stg_refunds
+    description: "Reembolsos monetarios asociados a devoluciones. Añadida refund_date."
+    columns:
+      - name: refund_id
+        tests: [not_null, unique]
+      - name: return_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_returns')
+              field: return_id
+      - name: amount
+        description: "Importe reembolsado."
+        tests: [not_null]
+      - name: status
+        tests:
+          - accepted_values:
+              values: ['processed', 'pending', 'failed']
+
+  - name: stg_stock_movements
+    description: >
+      Movimientos de stock (ventas, devoluciones, reposiciones, ajustes).
+      Cantidad positiva = entrada, negativa = salida. Añadidas movement_date y movement_cost.
+    columns:
+      - name: stock_movement_id
+        tests: [not_null, unique]
+      - name: store_id
+        tests: [not_null]
+      - name: product_variant_id
+        tests: [not_null]
+      - name: movement_type
+        description: "Tipo de movimiento: initial_load, purchase_in, sale_out, return_in."
+        tests:
+          - accepted_values:
+              values: ['initial_load', 'purchase_in', 'sale_out', 'return_in']
+      - name: quantity
+        description: "Unidades movidas (positivo=entrada, negativo=salida)."
+        tests: [not_null]
+
+  - name: stg_purchase_orders
+    description: "Pedidos a proveedores. Añadidos order_date y lead_time_days."
+    columns:
+      - name: purchase_order_id
+        tests: [not_null, unique]
+      - name: po_number
+        tests: [not_null, unique]
+      - name: supplier_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_suppliers')
+              field: supplier_id
+      - name: status
+        tests:
+          - accepted_values:
+              values: ['draft', 'confirmed', 'received', 'cancelled']
+      - name: lead_time_days
+        description: "Días entre pedido y recepción (null si aún no recibido)."
+
+  - name: stg_purchase_order_items
+    description: "Líneas de pedido a proveedor. Añadidas quantity_pending y costes totales."
+    columns:
+      - name: purchase_order_item_id
+        tests: [not_null, unique]
+      - name: purchase_order_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_purchase_orders')
+              field: purchase_order_id
+      - name: product_variant_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_product_variants')
+              field: product_variant_id
+      - name: quantity_ordered
+        tests: [not_null]
