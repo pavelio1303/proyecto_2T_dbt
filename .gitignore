@@ -16,5 +16,4 @@ explore_db.py
 check_duckdb.py
 
 ingesta/data/
-ingesta/ingest.py
 
