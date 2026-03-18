@@ -1,18 +1,23 @@
 {{ config(
     materialized='incremental',
-    unique_key='sale_line_id',
-    on_schema_change='fail'
+    unique_key='sale_line_id'
 ) }}
 
 WITH sales AS (
     SELECT * FROM {{ ref('stg_sales') }}
     {% if is_incremental() %}
-      -- Solo traemos datos nuevos desde la última carga
       WHERE sale_date > (SELECT MAX(sale_date) FROM {{ this }})
     {% endif %}
 ),
-sale_lines AS (
-    SELECT * FROM {{ ref('stg_sale_lines') }}
+returns_lookup AS (
+    -- Agrupamos devoluciones por venta para evitar duplicar filas en el join
+    SELECT 
+        sale_id,
+        COUNT(*) AS items_returned,
+        SUM(refund_amount) AS total_refunded_amount
+    FROM {{ ref('stg_returns') }}
+    WHERE status = 'COMPLETED' -- Solo devoluciones procesadas
+    GROUP BY 1
 ),
 final AS (
     SELECT
@@ -23,12 +28,12 @@ final AS (
         s.customer_id,
         l.variant_id,
         l.quantity,
-        l.unit_price AS price_at_sale,
-        l.discount_amount,
-        -- Cálculo de base imponible e IVA (asumiendo 21%)
-        (l.quantity * l.unit_price) - l.discount_amount AS net_amount_before_tax,
-        ((l.quantity * l.unit_price) - l.discount_amount) * 0.21 AS tax_amount
-    FROM sale_lines l
+        l.unit_price,
+        -- Indicador de si la venta fue devuelta
+        CASE WHEN r.sale_id IS NOT NULL THEN TRUE ELSE FALSE END AS is_returned,
+        COALESCE(r.total_refunded_amount, 0) AS amount_refunded
+    FROM {{ ref('stg_sale_lines') }} l
     INNER JOIN sales s ON l.sale_id = s.sale_id
+    LEFT JOIN returns_lookup r ON s.sale_id = r.sale_id
 )
 SELECT * FROM final
