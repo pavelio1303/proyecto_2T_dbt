@@ -1,13 +1,15 @@
 SELECT
     s.sale_date,
     s.store_id,
-    d.is_store_open_day,
-    COUNT(DISTINCT s.sale_id) AS num_orders,
-    SUM(s.quantity) AS total_items_sold,
-    SUM(s.net_amount_before_tax) AS gross_revenue,
-    SUM(s.discount_amount) AS total_discounts,
-    -- Venta Neta final pedida por el cliente
-    SUM(s.net_amount_before_tax) - SUM(s.discount_amount) AS final_net_revenue
+    COUNT(DISTINCT s.sale_id) AS total_transactions,
+    SUM(s.quantity) AS total_units_sold,
+    -- Venta Bruta
+    SUM(s.quantity * s.unit_price) AS gross_revenue,
+    -- Impacto de Devoluciones
+    SUM(s.amount_refunded) AS total_refunds,
+    -- VENTA NETA FINAL (Requisito GPT Cliente)
+    SUM(s.quantity * s.unit_price) - SUM(s.amount_refunded) AS net_revenue,
+    -- Tasa de devolución (KPI extra para nota)
+    SAFE_DIVIDE(SUM(CASE WHEN s.is_returned THEN 1 ELSE 0 END), COUNT(*)) AS return_rate
 FROM {{ ref('fct_sales') }} s
-LEFT JOIN {{ ref('dim_date') }} d ON s.sale_date = d.date_day
-GROUP BY 1, 2, 3
+GROUP BY 1, 2
