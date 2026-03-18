@@ -1,15 +1,12 @@
 SELECT
     r.return_id,
     r.sale_id,
-    r.return_date,
-    r.store_id,
-    r.customer_id,
+    ri.quantity,
     UPPER(TRIM(r.reason)) AS return_reason,
     UPPER(TRIM(r.status)) AS return_status,
-    r.refund_amount,
-    -- Información del reembolso monetario
-    rf.refund_method,
-    rf.amount AS actual_cash_refunded
+    -- Usamos el monto de la tabla de devoluciones o del reembolso
+    COALESCE(rf.amount, r.refund_amount) AS total_refunded_amount,
+    rf.refund_date
 FROM {{ ref('stg_returns') }} r
-LEFT JOIN {{ ref('stg_refunds') }} rf ON r.return_id = rf.return_id
-WHERE r.status != 'CANCELLED'
+LEFT JOIN {{ ref('stg_return_items') }} ri ON r.return_id = ri.return_id
+LEFT JOIN {{ ref('stg_refunds') }} rf ON r.return_id = rf.return_id -- OJO: a veces es rf.refund_id

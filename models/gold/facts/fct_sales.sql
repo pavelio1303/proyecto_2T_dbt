@@ -1,39 +1,31 @@
 {{ config(
     materialized='incremental',
-    unique_key='sale_line_id'
+    unique_key='sale_item_id'
 ) }}
 
-WITH sales AS (
-    SELECT * FROM {{ ref('stg_sales') }}
-    {% if is_incremental() %}
-      WHERE sale_date > (SELECT MAX(sale_date) FROM {{ this }})
-    {% endif %}
+WITH sale_items AS (
+    SELECT * FROM {{ ref('stg_sale_items') }}
 ),
-returns_lookup AS (
-    -- Agrupamos devoluciones por venta para evitar duplicar filas en el join
-    SELECT 
-        sale_id,
-        COUNT(*) AS items_returned,
-        SUM(refund_amount) AS total_refunded_amount
-    FROM {{ ref('stg_returns') }}
-    WHERE status = 'COMPLETED' -- Solo devoluciones procesadas
-    GROUP BY 1
+-- Nota: Asegúrate de que el archivo en Silver se llame exactamente stg_sales.sql
+sales_header AS (
+    SELECT * FROM {{ ref('stg_sales') }} 
 ),
 final AS (
     SELECT
-        l.sale_line_id,
-        s.sale_id,
-        s.sale_date,
-        s.store_id,
-        s.customer_id,
-        l.variant_id,
-        l.quantity,
-        l.unit_price,
-        -- Indicador de si la venta fue devuelta
-        CASE WHEN r.sale_id IS NOT NULL THEN TRUE ELSE FALSE END AS is_returned,
-        COALESCE(r.total_refunded_amount, 0) AS amount_refunded
-    FROM {{ ref('stg_sale_lines') }} l
-    INNER JOIN sales s ON l.sale_id = s.sale_id
-    LEFT JOIN returns_lookup r ON s.sale_id = r.sale_id
+        si.sale_item_id,
+        si.sale_id,
+        sh.sale_date,
+        sh.store_id,
+        sh.customer_id,
+        si.product_variant_id AS variant_id,
+        si.quantity,
+        si.price AS unit_price,
+        COALESCE(si.total_amount, (si.quantity * si.price)) AS gross_amount
+    FROM sale_items si
+    LEFT JOIN sales_header sh ON si.sale_id = sh.sale_id
+
+    {% if is_incremental() %}
+      WHERE sh.sale_date > (SELECT MAX(sale_date) FROM {{ this }})
+    {% endif %}
 )
 SELECT * FROM final

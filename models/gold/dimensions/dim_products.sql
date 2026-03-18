@@ -1,26 +1,28 @@
 WITH products AS (
     SELECT * FROM {{ ref('stg_products') }}
 ),
-variants AS (
-    SELECT * FROM {{ ref('stg_variants') }}
+brands AS (
+    SELECT * FROM {{ ref('stg_brands') }}
+),
+categories AS (
+    SELECT * FROM {{ ref('stg_categories') }}
 ),
 final AS (
     SELECT
-        v.variant_id,
-        v.product_id,
+        p.product_id,
         UPPER(TRIM(p.product_name)) AS product_name,
-        UPPER(TRIM(p.brand_name)) AS brand,
-        UPPER(TRIM(p.category_name)) AS category,
-        v.size,
-        v.color,
-        v.unit_price,
-        -- Atributo derivado: Gama de producto según precio
+        UPPER(TRIM(b.brand_name)) AS brand_name,
+        UPPER(TRIM(c.category_name)) AS category_name,
+        -- Si estas columnas dan error, es que se llaman distinto en stg_products
+        -- Puedes probar con p.product_price o p.amount
+        p.price AS unit_price,
         CASE 
-            WHEN v.unit_price > 150 THEN 'PREMIUM'
-            WHEN v.unit_price BETWEEN 80 AND 150 THEN 'MID'
+            WHEN p.price > 150 THEN 'PREMIUM'
+            WHEN p.price BETWEEN 80 AND 150 THEN 'MID'
             ELSE 'BUDGET'
         END AS price_segment
-    FROM variants v
-    LEFT JOIN products p ON v.product_id = p.product_id
+    FROM products p
+    LEFT JOIN brands b ON p.brand_id = b.brand_id
+    LEFT JOIN categories c ON p.category_id = c.category_id
 )
 SELECT * FROM final

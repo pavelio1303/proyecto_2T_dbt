@@ -1,18 +1,15 @@
-{% snapshot inventory_status_snapshot %}
+{% snapshot inventory_snapshot %}
 
 {{
     config(
       target_schema='snapshots',
       strategy='check',
-      unique_key="variant_id || '-' || store_id",
-      check_cols=['stock_quantity'],
+      unique_key='inventory_id',
+      check_cols=['quantity'],
     )
 }}
 
-SELECT 
-    variant_id,
-    store_id,
-    stock_quantity
-FROM {{ ref('stg_stock') }}
+-- Cambiamos STG_INVENTORY_STOCK por stg_inventory_stock
+SELECT * FROM {{ ref('stg_inventory_stock') }}
 
 {% endsnapshot %}
