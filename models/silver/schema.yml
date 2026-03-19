@@ -36,7 +36,8 @@ models:
         description: "Estado de la tienda: active, closed, temporarily_closed."
         tests:
           - accepted_values:
-              values: ['active', 'closed', 'temporarily_closed']
+              arguments:
+                values: ['active', 'closed', 'temporarily_closed']
       - name: is_active
         description: "TRUE si la tienda está activa y no tiene fecha de cierre."
 
@@ -50,7 +51,8 @@ models:
         tests:
           - not_null
           - accepted_values:
-              values: [1, 2, 3, 4, 5, 6, 7]
+              arguments:
+                values: [1, 2, 3, 4, 5, 6, 7]
       - name: weekday_name
         description: "Nombre del día en español."
       - name: is_open
@@ -67,8 +69,9 @@ models:
         tests:
           - not_null
           - relationships:
-              to: ref('stg_stores')
-              field: store_id
+              arguments:
+                to: ref('stg_stores')
+                field: store_id
       - name: role
         description: "Rol del empleado (normalizado a minúsculas)."
       - name: is_currently_active
@@ -93,14 +96,16 @@ models:
         tests:
           - not_null
           - relationships:
-              to: ref('stg_brands')
-              field: brand_id
+              arguments:
+                to: ref('stg_brands')
+                field: brand_id
       - name: category_id
         tests:
           - not_null
           - relationships:
-              to: ref('stg_categories')
-              field: category_id
+              arguments:
+                to: ref('stg_categories')
+                field: category_id
       - name: target_gender
         description: "Género objetivo normalizado: Hombre, Mujer, Unisex, Niños, No definido."
 
@@ -116,8 +121,9 @@ models:
         tests:
           - not_null
           - relationships:
-              to: ref('stg_products')
-              field: product_id
+              arguments:
+                to: ref('stg_products')
+                field: product_id
       - name: size_eu
         description: "Talla europea."
         tests: [not_null]
@@ -139,7 +145,8 @@ models:
       - name: status
         tests:
           - accepted_values:
-              values: ['active', 'inactive', 'banned']
+              arguments:
+                values: ['active', 'inactive', 'banned']
       - name: gender
         description: "Género normalizado: Hombre, Mujer, No especificado."
       - name: marketing_opt_in
@@ -155,11 +162,13 @@ models:
       - name: discount_type
         tests:
           - accepted_values:
-              values: ['percentage', 'fixed_amount']
+              arguments:
+                values: ['percentage', 'fixed_amount']
       - name: scope
         tests:
           - accepted_values:
-              values: ['global', 'store', 'category', 'product', 'customer']
+              arguments:
+                values: ['global', 'store', 'category', 'product', 'customer']
       - name: value_amount
         description: "Valor del descuento: porcentaje (0-100) o importe fijo en euros."
         tests: [not_null]
@@ -218,12 +227,14 @@ models:
         tests:
           - not_null
           - relationships:
-              to: ref('stg_stores')
-              field: store_id
+              arguments:
+                to: ref('stg_stores')
+                field: store_id
       - name: status
         tests:
           - accepted_values:
-              values: ['paid', 'refunded_partial', 'refunded_full']
+              arguments:
+                values: ['paid', 'refunded_partial', 'refunded_full']
       - name: total_amount
         description: "Importe final del ticket (subtotal - descuentos)."
         tests: [not_null]
@@ -239,14 +250,16 @@ models:
         tests:
           - not_null
           - relationships:
-              to: ref('stg_sales')
-              field: sale_id
+              arguments:
+                to: ref('stg_sales')
+                field: sale_id
       - name: product_variant_id
         tests:
           - not_null
           - relationships:
-              to: ref('stg_product_variants')
-              field: product_variant_id
+              arguments:
+                to: ref('stg_product_variants')
+                field: product_variant_id
       - name: quantity
         description: "Unidades vendidas."
         tests: [not_null]
@@ -273,17 +286,20 @@ models:
         tests:
           - not_null
           - relationships:
-              to: ref('stg_sales')
-              field: sale_id
+              arguments:
+                to: ref('stg_sales')
+                field: sale_id
       - name: payment_method
         description: "Método de pago: cash, card, bizum, gift_card."
         tests:
           - accepted_values:
-              values: ['cash', 'card', 'bizum', 'gift_card']
+              arguments:
+                values: ['cash', 'card', 'bizum', 'gift_card']
       - name: status
         tests:
           - accepted_values:
-              values: ['paid', 'pending', 'failed', 'refunded']
+              arguments:
+                values: ['paid', 'pending', 'failed', 'refunded']
       - name: amount
         description: "Importe pagado."
         tests: [not_null]
@@ -299,18 +315,21 @@ models:
         tests:
           - not_null
           - relationships:
-              to: ref('stg_sales')
-              field: sale_id
+              arguments:
+                to: ref('stg_sales')
+                field: sale_id
       - name: store_id
         tests:
           - not_null
           - relationships:
-              to: ref('stg_stores')
-              field: store_id
+              arguments:
+                to: ref('stg_stores')
+                field: store_id
       - name: status
         tests:
           - accepted_values:
-              values: ['refunded']
+              arguments:
+                values: ['refunded']
 
   - name: stg_return_items
     description: "Líneas de devolución. Una fila por variante devuelta dentro de una devolución."
@@ -321,8 +340,9 @@ models:
         tests:
           - not_null
           - relationships:
-              to: ref('stg_returns')
-              field: return_id
+              arguments:
+                to: ref('stg_returns')
+                field: return_id
       - name: sale_item_id
         tests: [not_null]
       - name: quantity
@@ -338,15 +358,17 @@ models:
         tests:
           - not_null
           - relationships:
-              to: ref('stg_returns')
-              field: return_id
+              arguments:
+                to: ref('stg_returns')
+                field: return_id
       - name: amount
         description: "Importe reembolsado."
         tests: [not_null]
       - name: status
         tests:
           - accepted_values:
-              values: ['processed', 'pending', 'failed']
+              arguments:
+                values: ['processed', 'pending', 'failed']
 
   - name: stg_stock_movements
     description: >
@@ -363,7 +385,8 @@ models:
         description: "Tipo de movimiento: initial_load, purchase_in, sale_out, return_in."
         tests:
           - accepted_values:
-              values: ['initial_load', 'purchase_in', 'sale_out', 'return_in']
+              arguments:
+                values: ['initial_load', 'purchase_in', 'sale_out', 'return_in']
       - name: quantity
         description: "Unidades movidas (positivo=entrada, negativo=salida)."
         tests: [not_null]
@@ -379,12 +402,14 @@ models:
         tests:
           - not_null
           - relationships:
-              to: ref('stg_suppliers')
-              field: supplier_id
+              arguments:
+                to: ref('stg_suppliers')
+                field: supplier_id
       - name: status
         tests:
           - accepted_values:
-              values: ['draft', 'confirmed', 'received', 'cancelled']
+              arguments:
+                values: ['draft', 'confirmed', 'received', 'cancelled']
       - name: lead_time_days
         description: "Días entre pedido y recepción (null si aún no recibido)."
 
@@ -397,13 +422,15 @@ models:
         tests:
           - not_null
           - relationships:
-              to: ref('stg_purchase_orders')
-              field: purchase_order_id
+              arguments:
+                to: ref('stg_purchase_orders')
+                field: purchase_order_id
       - name: product_variant_id
         tests:
           - not_null
           - relationships:
-              to: ref('stg_product_variants')
-              field: product_variant_id
+              arguments:
+                to: ref('stg_product_variants')
+                field: product_variant_id
       - name: quantity_ordered
         tests: [not_null]

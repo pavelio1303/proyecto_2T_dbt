@@ -10,6 +10,6 @@ SELECT
     -- VENTA NETA FINAL (Requisito GPT Cliente)
     SUM(s.quantity * s.unit_price) - SUM(s.amount_refunded) AS net_revenue,
     -- Tasa de devolución (KPI extra para nota)
-    SAFE_DIVIDE(SUM(CASE WHEN s.is_returned THEN 1 ELSE 0 END), COUNT(*)) AS return_rate
+    DIV0(SUM(IFF(s.is_returned, 1, 0)), COUNT(*)) AS return_rate
 FROM {{ ref('fct_sales') }} s
 GROUP BY 1, 2

@@ -35,7 +35,8 @@ sources:
           - name: status
             tests:
               - accepted_values:
-                  values: ['active', 'closed', 'temporarily_closed']
+                  arguments:
+                    values: ['active', 'closed', 'temporarily_closed']
 
       - name: store_business_hours
         description: "Horarios de apertura por tienda y día de la semana (ISO weekday: 1=Lunes, 7=Domingo)."
@@ -54,8 +55,9 @@ sources:
             tests:
               - not_null
               - relationships:
-                  to: source('raw', 'stores')
-                  field: store_id
+                  arguments:
+                    to: source('raw', 'stores')
+                    field: store_id
 
       - name: suppliers
         description: "Proveedores de producto."
@@ -74,14 +76,16 @@ sources:
             tests:
               - not_null
               - relationships:
-                  to: source('raw', 'brands')
-                  field: brand_id
+                  arguments:
+                    to: source('raw', 'brands')
+                    field: brand_id
           - name: category_id
             tests:
               - not_null
               - relationships:
-                  to: source('raw', 'categories')
-                  field: category_id
+                  arguments:
+                    to: source('raw', 'categories')
+                    field: category_id
 
       - name: product_variants
         description: "Variantes de producto: combinación única de producto + color + talla."
@@ -94,8 +98,9 @@ sources:
             tests:
               - not_null
               - relationships:
-                  to: source('raw', 'products')
-                  field: product_id
+                  arguments:
+                    to: source('raw', 'products')
+                    field: product_id
 
       - name: customers
         description: "Clientes registrados en el programa de fidelización."
@@ -107,7 +112,8 @@ sources:
           - name: status
             tests:
               - accepted_values:
-                  values: ['active', 'inactive', 'banned']
+                  arguments:
+                    values: ['active', 'inactive', 'banned']
 
       - name: discounts
         description: "Campañas y descuentos configurados."
@@ -117,11 +123,13 @@ sources:
           - name: discount_type
             tests:
               - accepted_values:
-                  values: ['percentage', 'fixed_amount']
+                  arguments:
+                    values: ['percentage', 'fixed_amount']
           - name: scope
             tests:
               - accepted_values:
-                  values: ['global', 'store', 'category', 'product', 'customer']
+                  arguments:
+                    values: ['global', 'store', 'category', 'product', 'customer']
 
       - name: discount_categories
         description: "Relación N:M entre descuentos y categorías de producto."
@@ -148,12 +156,14 @@ sources:
             tests:
               - not_null
               - relationships:
-                  to: source('raw', 'stores')
-                  field: store_id
+                  arguments:
+                    to: source('raw', 'stores')
+                    field: store_id
           - name: status
             tests:
               - accepted_values:
-                  values: ['paid', 'cancelled', 'refunded', 'partially_refunded']
+                  arguments:
+                    values: ['paid', 'refunded_partial', 'refunded_full']
 
       - name: sale_items
         description: "Líneas de venta: una fila por variante dentro de un ticket."
@@ -164,14 +174,16 @@ sources:
             tests:
               - not_null
               - relationships:
-                  to: source('raw', 'sales')
-                  field: sale_id
+                  arguments:
+                    to: source('raw', 'sales')
+                    field: sale_id
           - name: product_variant_id
             tests:
               - not_null
               - relationships:
-                  to: source('raw', 'product_variants')
-                  field: product_variant_id
+                  arguments:
+                    to: source('raw', 'product_variants')
+                    field: product_variant_id
 
       - name: sale_item_discounts
         description: "Descuentos aplicados a cada línea de venta."
@@ -188,12 +200,14 @@ sources:
             tests:
               - not_null
               - relationships:
-                  to: source('raw', 'sales')
-                  field: sale_id
+                  arguments:
+                    to: source('raw', 'sales')
+                    field: sale_id
           - name: payment_method
             tests:
               - accepted_values:
-                  values: ['cash', 'card', 'bizum', 'voucher', 'mixed']
+                  arguments:
+                    values: ['cash', 'card', 'bizum', 'gift_card']
 
       - name: returns
         description: "Cabecera de devoluciones."
@@ -206,8 +220,9 @@ sources:
             tests:
               - not_null
               - relationships:
-                  to: source('raw', 'sales')
-                  field: sale_id
+                  arguments:
+                    to: source('raw', 'sales')
+                    field: sale_id
 
       - name: return_items
         description: "Líneas de devolución: variantes devueltas por retorno."
@@ -218,8 +233,9 @@ sources:
             tests:
               - not_null
               - relationships:
-                  to: source('raw', 'returns')
-                  field: return_id
+                  arguments:
+                    to: source('raw', 'returns')
+                    field: return_id
 
       - name: refunds
         description: "Reembolsos monetarios asociados a devoluciones."
@@ -230,8 +246,9 @@ sources:
             tests:
               - not_null
               - relationships:
-                  to: source('raw', 'returns')
-                  field: return_id
+                  arguments:
+                    to: source('raw', 'returns')
+                    field: return_id
 
       - name: stock_movements
         description: "Registro de todos los movimientos de stock (ventas, devoluciones, reposiciones, ajustes)."
@@ -241,7 +258,8 @@ sources:
           - name: movement_type
             tests:
               - accepted_values:
-                  values: ['sale', 'return', 'purchase_receipt', 'adjustment', 'transfer_in', 'transfer_out']
+                  arguments:
+                    values: ['sale', 'return', 'purchase_receipt', 'adjustment', 'transfer_in', 'transfer_out', 'initial_load', 'purchase_in', 'sale_out', 'return_in']
 
       - name: purchase_orders
         description: "Pedidos a proveedores para reposición de stock."
@@ -253,7 +271,8 @@ sources:
           - name: status
             tests:
               - accepted_values:
-                  values: ['draft', 'confirmed', 'received', 'cancelled']
+                  arguments:
+                    values: ['draft', 'confirmed', 'received', 'cancelled']
 
       - name: purchase_order_items
         description: "Líneas de pedido a proveedor."

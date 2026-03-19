@@ -5,7 +5,7 @@
       target_schema='snapshots',
       strategy='check',
       unique_key='inventory_id',
-      check_cols=['quantity'],
+      check_cols=['available_qty'],
     )
 }}
 

@@ -6,6 +6,9 @@ renamed as (
     select
         store_id,
         product_variant_id,
+        -- Identificador estable de inventario por (tienda, variante).
+        -- Se usa en snapshots para detectar cambios de stock a lo largo del tiempo.
+        store_id || '-' || product_variant_id as inventory_id,
         cast(on_hand_qty as integer)                  as on_hand_qty,
         cast(reserved_qty as integer)                 as reserved_qty,
         -- Stock disponible real = en mano - reservado
