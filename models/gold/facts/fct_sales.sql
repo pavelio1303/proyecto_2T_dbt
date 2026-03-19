@@ -19,7 +19,6 @@ final AS (
         sh.customer_id,
         si.product_variant_id AS variant_id,
         si.quantity,
-        si.price AS unit_price,
         COALESCE(si.total_amount, (si.quantity * si.price)) AS gross_amount
     FROM sale_items si
     LEFT JOIN sales_header sh ON si.sale_id = sh.sale_id

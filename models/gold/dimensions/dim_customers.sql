@@ -14,8 +14,6 @@ final AS (
         c.customer_id,
         UPPER(TRIM(c.first_name || ' ' || c.last_name)) AS full_name,
         UPPER(TRIM(c.email)) AS email,
-        -- Mapeo de booleano según tus requisitos guardados
-        CASE WHEN c.newsletter_status = 'S' THEN True ELSE False END AS is_subscriber,
         COALESCE(s.total_orders, 0) AS total_orders,
         COALESCE(s.lifetime_value, 0) AS lifetime_value,
         -- Segmentación dinámica
