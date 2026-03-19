@@ -15,5 +15,9 @@ Try running the following commands:
 - Check out [the blog](https://blog.getdbt.com/) for the latest news on dbt's development and best practices
 
 
+<<<<<<< HEAD
 
 Hola
+=======
+Pascual
+>>>>>>> b912407c8e90ed27ad2c5613b8918d77ad2ed675
