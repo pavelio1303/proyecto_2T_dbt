@@ -1,0 +1,49 @@
+version: 2
+
+snapshots:
+  - name: inventory_snapshot
+    description: >
+      Snapshot SCD (estrategia `check`) sobre el inventario. Detecta cambios
+      en `available_qty` para el mismo `inventory_id` y conserva historial temporal.
+    columns:
+      - name: dbt_scd_id
+        description: "Identificador interno SCD de dbt."
+      - name: dbt_updated_at
+        description: "Fecha/hora de actualización del snapshot (dbt)."
+      - name: dbt_valid_from
+        description: "Inicio de vigencia de la versión (dbt)."
+      - name: dbt_valid_to
+        description: "Fin de vigencia de la versión (dbt). Es NULL en la versión actual."
+
+      - name: inventory_id
+        description: >
+          Clave estable del inventario por (store_id, product_variant_id). Es el `unique_key`
+          configurado en `snapshots/inventory_status_snapshot.sql`.
+      - name: store_id
+        description: "Identificador de tienda."
+      - name: product_variant_id
+        description: "Identificador de variante de producto (producto + color + talla)."
+
+      - name: on_hand_qty
+        description: "Unidades físicas en inventario (en mano)."
+      - name: reserved_qty
+        description: "Unidades reservadas (no disponibles para venta)."
+      - name: available_qty
+        description: >
+          Unidades disponibles para venta: `on_hand_qty - reserved_qty`.
+          Es la columna controlada por el snapshot (`check_cols`).
+      - name: reorder_point
+        description: "Punto de reposición."
+      - name: reorder_qty
+        description: "Cantidad a reponer cuando aplica reposición."
+
+      - name: is_stockout
+        description: "TRUE si hay rotura de stock (disponible <= 0)."
+      - name: needs_reorder
+        description: "TRUE si el disponible está en o por debajo del punto de reposición."
+
+      - name: last_counted_at
+        description: "Fecha/hora del último conteo de inventario."
+      - name: updated_at
+        description: "Fecha/hora de actualización del inventario en la fuente (stg)."
+
