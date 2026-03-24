@@ -37,7 +37,7 @@ final AS (
         v.gross_margin,
         v.gross_margin_pct,
         p.is_active AS is_product_active,
-        v.is_variant_active
+        v.is_active AS is_variant_active
     FROM variants v
     INNER JOIN products p
         ON v.product_id = p.product_id

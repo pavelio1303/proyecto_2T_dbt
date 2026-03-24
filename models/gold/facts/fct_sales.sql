@@ -1,6 +1,7 @@
 {{ config(
     materialized='incremental',
-    unique_key='sale_item_id'
+    unique_key='sale_item_id',
+    on_schema_change='sync_all_columns'
 ) }}
 
 WITH sale_items AS (

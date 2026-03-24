@@ -13,7 +13,7 @@ WITH returns_header AS (
 return_items_agg AS (
     SELECT
         return_id,
-        SUM(quantity) AS quantity_returned,
+        SUM(quantity_returned) AS quantity_returned,
         SUM(line_refund_amount) AS items_refunded_amount
     FROM {{ ref('fct_return_items') }}
     GROUP BY 1
