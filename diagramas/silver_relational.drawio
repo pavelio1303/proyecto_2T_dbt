@@ -1,0 +1,187 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" version="29.6.5">
+  <diagram id="silver" name="Silver - Modelo relacional">
+    <mxGraphModel dx="4095" dy="2422" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2200" pageHeight="1400" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="stg_brands" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;" value="stg_brands&#xa;PK: brand_id" vertex="1">
+          <mxGeometry height="70" width="220" x="260" y="-200" as="geometry" />
+        </mxCell>
+        <mxCell id="stg_categories" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;" value="stg_categories&#xa;PK: category_id&#xa;FK: parent_category_id -&gt; stg_categories.category_id" vertex="1">
+          <mxGeometry height="90" width="350" x="40" y="140" as="geometry" />
+        </mxCell>
+        <mxCell id="stg_products" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;" value="stg_products&#xa;PK: product_id&#xa;FK: brand_id -&gt; stg_brands.brand_id&#xa;FK: category_id -&gt; stg_categories.category_id" vertex="1">
+          <mxGeometry height="100" width="380" x="740" y="-220" as="geometry" />
+        </mxCell>
+        <mxCell id="stg_product_variants" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;" value="stg_product_variants&#xa;PK: product_variant_id&#xa;UQ: variant_sku&#xa;FK: product_id -&gt; stg_products.product_id" vertex="1">
+          <mxGeometry height="100" width="360" x="1430" y="-215" as="geometry" />
+        </mxCell>
+        <mxCell id="stg_stores" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;" value="stg_stores&#xa;PK: store_id&#xa;UQ: store_code" vertex="1">
+          <mxGeometry height="80" width="260" x="-300" y="-210" as="geometry" />
+        </mxCell>
+        <mxCell id="stg_store_business_hours" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;" value="stg_store_business_hours&#xa;FK: store_id -&gt; stg_stores.store_id&#xa;Grano: (store_id, weekday_iso)" vertex="1">
+          <mxGeometry height="90" width="390" x="330" y="-370" as="geometry" />
+        </mxCell>
+        <mxCell id="stg_employees" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;" value="stg_employees&#xa;PK: employee_id&#xa;UQ: employee_code&#xa;FK: store_id -&gt; stg_stores.store_id" vertex="1">
+          <mxGeometry height="100" width="360" x="650" y="150" as="geometry" />
+        </mxCell>
+        <mxCell id="stg_customers" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1;" value="stg_customers&#xa;PK: customer_id&#xa;UQ: customer_code&#xa;FK: signup_store_id -&gt; stg_stores.store_id (opcional)" vertex="1">
+          <mxGeometry height="100" width="380" x="-360" y="530" as="geometry" />
+        </mxCell>
+        <mxCell id="stg_sales" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontStyle=1;" value="stg_sales (INCREMENTAL)&#xa;PK: sale_id&#xa;UQ: sale_number&#xa;FK: store_id -&gt; stg_stores.store_id&#xa;FK: customer_id -&gt; stg_customers.customer_id (nullable)&#xa;FK: employee_id -&gt; stg_employees.employee_id (nullable)" vertex="1">
+          <mxGeometry height="130" width="520" x="350" y="400" as="geometry" />
+        </mxCell>
+        <mxCell id="stg_sale_items" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontStyle=1;" value="stg_sale_items&#xa;PK: sale_item_id&#xa;FK: sale_id -&gt; stg_sales.sale_id&#xa;FK: product_variant_id -&gt; stg_product_variants.product_variant_id" vertex="1">
+          <mxGeometry height="110" width="430" x="980" y="450" as="geometry" />
+        </mxCell>
+        <mxCell id="stg_payments" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontStyle=1;" value="stg_payments&#xa;PK: payment_id&#xa;FK: sale_id -&gt; stg_sales.sale_id" vertex="1">
+          <mxGeometry height="80" width="330" x="420" y="600" as="geometry" />
+        </mxCell>
+        <mxCell id="stg_discounts" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;" value="stg_discounts&#xa;PK: discount_id" vertex="1">
+          <mxGeometry height="70" width="260" x="-280" y="790" as="geometry" />
+        </mxCell>
+        <mxCell id="stg_sale_item_discounts" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;" value="stg_sale_item_discounts&#xa;PK: sale_item_discount_id&#xa;FK: sale_item_id -&gt; stg_sale_items.sale_item_id&#xa;FK: discount_id -&gt; stg_discounts.discount_id" vertex="1">
+          <mxGeometry height="100" width="430" x="980" y="600" as="geometry" />
+        </mxCell>
+        <mxCell id="stg_discount_categories" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;" value="stg_discount_categories&#xa;FK: discount_id -&gt; stg_discounts.discount_id&#xa;FK: category_id -&gt; stg_categories.category_id&#xa;N:M" vertex="1">
+          <mxGeometry height="90" width="360" x="40" y="1120" as="geometry" />
+        </mxCell>
+        <mxCell id="stg_discount_stores" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;" value="stg_discount_stores&#xa;FK: discount_id -&gt; stg_discounts.discount_id&#xa;FK: store_id -&gt; stg_stores.store_id&#xa;N:M" vertex="1">
+          <mxGeometry height="90" width="340" x="-320" y="1200" as="geometry" />
+        </mxCell>
+        <mxCell id="stg_returns" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1;" value="stg_returns&#xa;PK: return_id&#xa;UQ: return_number&#xa;FK: sale_id -&gt; stg_sales.sale_id&#xa;FK: store_id -&gt; stg_stores.store_id&#xa;FK: customer_id -&gt; stg_customers.customer_id (nullable)&#xa;FK: processed_by_employee_id -&gt; stg_employees.employee_id (nullable)" vertex="1">
+          <mxGeometry height="140" width="560" x="420" y="990" as="geometry" />
+        </mxCell>
+        <mxCell id="stg_return_items" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1;" value="stg_return_items&#xa;PK: return_item_id&#xa;FK: return_id -&gt; stg_returns.return_id&#xa;FK: sale_item_id -&gt; stg_sale_items.sale_item_id" vertex="1">
+          <mxGeometry height="100" width="400" x="1280" y="1010" as="geometry" />
+        </mxCell>
+        <mxCell id="stg_refunds" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1;" value="stg_refunds&#xa;PK: refund_id&#xa;FK: return_id -&gt; stg_returns.return_id" vertex="1">
+          <mxGeometry height="80" width="340" x="530" y="1220" as="geometry" />
+        </mxCell>
+        <mxCell id="stg_inventory_stock" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;" value="stg_inventory_stock&#xa;Grano: (store_id, product_variant_id)&#xa;FK: store_id -&gt; stg_stores.store_id&#xa;FK: product_variant_id -&gt; stg_product_variants.product_variant_id" vertex="1">
+          <mxGeometry height="100" width="460" x="1260" y="60" as="geometry" />
+        </mxCell>
+        <mxCell id="stg_stock_movements" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;" value="stg_stock_movements&#xa;PK: stock_movement_id&#xa;FK: store_id -&gt; stg_stores.store_id&#xa;FK: product_variant_id -&gt; stg_product_variants.product_variant_id&#xa;Ref opcional: sale_item_id / return_item_id / purchase_order_item_id" vertex="1">
+          <mxGeometry height="120" width="520" x="1260" y="200" as="geometry" />
+        </mxCell>
+        <mxCell id="stg_suppliers" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;" value="stg_suppliers&#xa;PK: supplier_id&#xa;UQ: supplier_code" vertex="1">
+          <mxGeometry height="80" width="300" x="1260" y="350" as="geometry" />
+        </mxCell>
+        <mxCell id="stg_purchase_orders" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;" value="stg_purchase_orders&#xa;PK: purchase_order_id&#xa;UQ: po_number&#xa;FK: supplier_id -&gt; stg_suppliers.supplier_id&#xa;FK: destination_store_id -&gt; stg_stores.store_id (nullable)" vertex="1">
+          <mxGeometry height="120" width="520" x="1860" y="340" as="geometry" />
+        </mxCell>
+        <mxCell id="stg_purchase_order_items" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;" value="stg_purchase_order_items&#xa;PK: purchase_order_item_id&#xa;FK: purchase_order_id -&gt; stg_purchase_orders.purchase_order_id&#xa;FK: product_variant_id -&gt; stg_product_variants.product_variant_id" vertex="1">
+          <mxGeometry height="100" width="520" x="1740" y="620" as="geometry" />
+        </mxCell>
+        <mxCell id="e_prod_brand" edge="1" parent="1" source="stg_products" style="endArrow=block;html=1;rounded=0;strokeColor=#6c8ebf;" target="stg_brands">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_prod_cat" edge="1" parent="1" source="stg_products" style="endArrow=block;html=1;rounded=0;strokeColor=#6c8ebf;" target="stg_categories">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_var_prod" edge="1" parent="1" source="stg_product_variants" style="endArrow=block;html=1;rounded=0;strokeColor=#6c8ebf;" target="stg_products">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_hours_store" edge="1" parent="1" source="stg_store_business_hours" style="endArrow=block;html=1;rounded=0;strokeColor=#82b366;" target="stg_stores">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_emp_store" edge="1" parent="1" source="stg_employees" style="endArrow=block;html=1;rounded=0;strokeColor=#82b366;" target="stg_stores">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_cust_signup_store" edge="1" parent="1" source="stg_customers" style="endArrow=block;html=1;rounded=0;strokeColor=#d6b656;dashed=1;" target="stg_stores">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_sales_store" edge="1" parent="1" source="stg_sales" style="endArrow=block;html=1;rounded=0;strokeColor=#b85450;" target="stg_stores">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_sales_customer" edge="1" parent="1" source="stg_sales" style="endArrow=block;html=1;rounded=0;strokeColor=#b85450;dashed=1;" target="stg_customers">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_sales_employee" edge="1" parent="1" source="stg_sales" style="endArrow=block;html=1;rounded=0;strokeColor=#b85450;dashed=1;" target="stg_employees">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_items_sale" edge="1" parent="1" source="stg_sale_items" style="endArrow=block;html=1;rounded=0;strokeColor=#b85450;" target="stg_sales">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_items_variant" edge="1" parent="1" source="stg_sale_items" style="endArrow=block;html=1;rounded=0;strokeColor=#b85450;" target="stg_product_variants">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_pay_sale" edge="1" parent="1" source="stg_payments" style="endArrow=block;html=1;rounded=0;strokeColor=#b85450;" target="stg_sales">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_sid_item" edge="1" parent="1" source="stg_sale_item_discounts" style="endArrow=block;html=1;rounded=0;strokeColor=#9673a6;" target="stg_sale_items">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_sid_disc" edge="1" parent="1" source="stg_sale_item_discounts" style="endArrow=block;html=1;rounded=0;strokeColor=#9673a6;" target="stg_discounts">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="650" y="840" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_dc_disc" edge="1" parent="1" source="stg_discount_categories" style="endArrow=block;html=1;rounded=0;strokeColor=#9673a6;" target="stg_discounts">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_dc_cat" edge="1" parent="1" source="stg_discount_categories" style="endArrow=block;html=1;rounded=0;strokeColor=#9673a6;" target="stg_categories">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_ds_disc" edge="1" parent="1" source="stg_discount_stores" style="endArrow=block;html=1;rounded=0;strokeColor=#9673a6;" target="stg_discounts">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_ds_store" edge="1" parent="1" source="stg_discount_stores" style="endArrow=block;html=1;rounded=0;strokeColor=#9673a6;" target="stg_stores">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="230" y="790" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_ret_sale" edge="1" parent="1" source="stg_returns" style="endArrow=block;html=1;rounded=0;strokeColor=#d6b656;" target="stg_sales">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_ret_store" edge="1" parent="1" source="stg_returns" style="endArrow=block;html=1;rounded=0;strokeColor=#d6b656;" target="stg_stores">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_ret_customer" edge="1" parent="1" source="stg_returns" style="endArrow=block;html=1;rounded=0;strokeColor=#d6b656;dashed=1;" target="stg_customers">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="400" y="880" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_ret_employee" edge="1" parent="1" source="stg_returns" style="endArrow=block;html=1;rounded=0;strokeColor=#d6b656;dashed=1;" target="stg_employees">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_rit_ret" edge="1" parent="1" source="stg_return_items" style="endArrow=block;html=1;rounded=0;strokeColor=#d6b656;" target="stg_returns">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_rit_sale_item" edge="1" parent="1" source="stg_return_items" style="endArrow=block;html=1;rounded=0;strokeColor=#d6b656;" target="stg_sale_items">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_ref_ret" edge="1" parent="1" source="stg_refunds" style="endArrow=block;html=1;rounded=0;strokeColor=#d6b656;" target="stg_returns">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_inv_store" edge="1" parent="1" source="stg_inventory_stock" style="endArrow=block;html=1;rounded=0;strokeColor=#82b366;" target="stg_stores">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_inv_variant" edge="1" parent="1" source="stg_inventory_stock" style="endArrow=block;html=1;rounded=0;strokeColor=#82b366;" target="stg_product_variants">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_sm_store" edge="1" parent="1" source="stg_stock_movements" style="endArrow=block;html=1;rounded=0;strokeColor=#82b366;" target="stg_stores">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_sm_variant" edge="1" parent="1" source="stg_stock_movements" style="endArrow=block;html=1;rounded=0;strokeColor=#82b366;" target="stg_product_variants">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_po_supplier" edge="1" parent="1" source="stg_purchase_orders" style="endArrow=block;html=1;rounded=0;strokeColor=#6c8ebf;" target="stg_suppliers">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_poi_po" edge="1" parent="1" source="stg_purchase_order_items" style="endArrow=block;html=1;rounded=0;strokeColor=#6c8ebf;" target="stg_purchase_orders">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_poi_variant" edge="1" parent="1" source="stg_purchase_order_items" style="endArrow=block;html=1;rounded=0;strokeColor=#6c8ebf;" target="stg_product_variants">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
