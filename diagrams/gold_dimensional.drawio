@@ -1,0 +1,64 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" version="29.3.8">
+  <diagram id="gold" name="Gold - Modelo dimensional">
+    <mxGraphModel dx="1042" dy="562" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2200" pageHeight="1400" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="dim_date" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;" value="dim_date&#xa;PK: date_day" vertex="1">
+          <mxGeometry height="70" width="260" x="700" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="dim_stores" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;" value="dim_stores&#xa;PK: store_id" vertex="1">
+          <mxGeometry height="70" width="260" x="20" y="380" as="geometry" />
+        </mxCell>
+        <mxCell id="dim_customers" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1;" value="dim_customers&#xa;PK: customer_id" vertex="1">
+          <mxGeometry height="70" width="260" x="700" y="570" as="geometry" />
+        </mxCell>
+        <mxCell id="dim_products" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;" value="dim_products&#xa;PK: product_id" vertex="1">
+          <mxGeometry height="70" width="260" x="1490" y="185" as="geometry" />
+        </mxCell>
+        <mxCell id="fct_sales" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontStyle=1;" value="fct_sales&#xa;PK: sale_item_id (grano línea)&#xa;FK: sale_date -&gt; dim_date.date_day&#xa;FK: store_id -&gt; dim_stores.store_id&#xa;FK: customer_id -&gt; dim_customers.customer_id (nullable)&#xa;FK: product_id -&gt; dim_products.product_id&#xa;Degenerate: sale_id&#xa;Atributo técnico: product_variant_id" vertex="1">
+          <mxGeometry height="180" width="620" x="520" y="130" as="geometry" />
+        </mxCell>
+        <mxCell id="daily_store_performance" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1;" value="daily_store_performance&#xa;Grano: (sale_date, store_id)&#xa;FK: sale_date -&gt; dim_date.date_day&#xa;FK: store_id -&gt; dim_stores.store_id&#xa;KPI: gross_revenue, total_refunds, net_revenue, return_rate" vertex="1">
+          <mxGeometry height="120" width="620" x="520" y="700" as="geometry" />
+        </mxCell>
+        <mxCell id="g_e_sales_date" edge="1" parent="1" source="fct_sales" style="endArrow=block;html=1;rounded=0;strokeColor=#6c8ebf;" target="dim_date">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="g_e_sales_store" edge="1" parent="1" source="fct_sales" style="endArrow=block;html=1;rounded=0;strokeColor=#82b366;" target="dim_stores">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="g_e_sales_customer" edge="1" parent="1" source="fct_sales" style="endArrow=block;html=1;rounded=0;strokeColor=#d6b656;dashed=1;" target="dim_customers">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="g_e_sales_product" edge="1" parent="1" source="fct_sales" style="endArrow=block;html=1;rounded=0;strokeColor=#9673a6;" target="dim_products">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="g_e_aggr_date" edge="1" parent="1" source="fct_returns" style="endArrow=block;html=1;rounded=0;strokeColor=#6c8ebf;" target="dim_date">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="g_e_aggr_store" edge="1" parent="1" source="daily_store_performance" style="endArrow=block;html=1;rounded=0;strokeColor=#82b366;" target="dim_stores">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="g_e_returns_date" edge="1" parent="1" source="fct_returns" style="endArrow=block;html=1;rounded=0;strokeColor=#6c8ebf;" target="dim_date">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="g_e_returns_store" edge="1" parent="1" source="fct_returns" style="endArrow=block;html=1;rounded=0;strokeColor=#82b366;" target="dim_stores">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="g_e_returns_customer" edge="1" parent="1" source="fct_returns" style="endArrow=block;html=1;rounded=0;strokeColor=#d6b656;dashed=1;" target="dim_customers">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="CNUt-5aJ-d_mGs-0k9Mz-1" edge="1" parent="1" source="daily_store_performance" style="endArrow=block;html=1;rounded=0;strokeColor=#6c8ebf;" target="fct_returns" value="">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="830" y="600" as="sourcePoint" />
+            <mxPoint x="830" y="100" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="fct_returns" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontStyle=1;" value="fct_returns&#xa;PK: return_id (grano devolución)&#xa;FK: return_date -&gt; dim_date.date_day&#xa;FK: store_id -&gt; dim_stores.store_id&#xa;FK: customer_id -&gt; dim_customers.customer_id (nullable)&#xa;Degenerate: sale_id&#xa;Atributos: refund_date" vertex="1">
+          <mxGeometry height="110" width="620" x="520" y="360" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
