@@ -4,7 +4,7 @@ WITH customers AS (
 segmentation_params AS (
     -- Umbrales de negocio explícitos y reproducibles.
     SELECT
-        3::NUMBER AS recurrent_orders_threshold,
+        2::NUMBER AS recurrent_orders_threshold,
         10::NUMBER AS vip_orders_threshold,
         1000::NUMBER(12,2) AS high_value_ltv_threshold,
         1500::NUMBER(12,2) AS vip_ltv_threshold
@@ -31,7 +31,6 @@ final AS (
             WHEN COALESCE(s.total_orders, 0) >= p.vip_orders_threshold
                  OR COALESCE(s.lifetime_value, 0) >= p.vip_ltv_threshold THEN 'high_value'
             WHEN COALESCE(s.total_orders, 0) >= p.recurrent_orders_threshold THEN 'recurrent'
-            WHEN COALESCE(s.total_orders, 0) >= 1 THEN 'occasional'
             ELSE 'new'
         END AS customer_segment,
         -- Flag VIP híbrido (frecuencia o gasto).
