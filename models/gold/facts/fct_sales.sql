@@ -34,6 +34,7 @@ final AS (
         sh.sale_date,
         sh.store_id,
         sh.customer_id,
+        IFF(sh.customer_id IS NULL, 'WALKIN', 'IDENTIFIED') AS customer_type,
         pm.product_id,
         si.product_variant_id,
         si.quantity,
