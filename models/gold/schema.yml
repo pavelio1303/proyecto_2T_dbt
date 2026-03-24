@@ -1,0 +1,157 @@
+version: 2
+
+models:
+  - name: dim_date
+    description: >
+      Dimensión calendario con grano de día. Incluye banderas útiles para
+      análisis de negocio (por ejemplo, si la tienda opera en ese día).
+    columns:
+      - name: date_day
+        description: "Fecha del día (grano de la dimensión)."
+      - name: year
+        description: "Año de la fecha."
+      - name: month
+        description: "Mes (1-12)."
+      - name: day
+        description: "Día del mes."
+      - name: day_of_week
+        description: "Número de día de la semana (según Snowflake)."
+      - name: is_store_open_day
+        description: >
+          TRUE(1) si el día corresponde a un día operativo de tienda.
+          En Snowflake, el domingo se trata como el caso especial para marcar operatividad.
+
+  - name: dim_stores
+    description: >
+      Dimensión de tiendas. Consolida metadatos de tienda y la ventana horaria
+      (open_time/close_time) a nivel de `store_id`.
+    columns:
+      - name: store_id
+        description: "Identificador único de la tienda."
+      - name: store_name
+        description: "Nombre de la tienda (normalizado a mayúsculas)."
+      - name: city
+        description: "Ciudad de la tienda (normalizada a mayúsculas)."
+      - name: open_time
+        description: "Hora de apertura (agregada como MIN de open_time por store_id)."
+      - name: close_time
+        description: "Hora de cierre (agregada como MAX de close_time por store_id)."
+
+  - name: dim_customers
+    description: >
+      Dimensión de clientes. Incorpora métricas derivadas de negocio
+      como total de órdenes, LTV (lifetime_value) y segmentación.
+    columns:
+      - name: customer_id
+        description: "Identificador único del cliente."
+      - name: full_name
+        description: "Nombre completo del cliente (normalizado a mayúsculas)."
+      - name: email
+        description: "Email del cliente."
+      - name: total_orders
+        description: "Cantidad total de órdenes del cliente (derivado de ventas)."
+      - name: lifetime_value
+        description: "Valor de vida útil (suma de total_amount por cliente)."
+      - name: customer_segment
+        description: >
+          Segmentación dinámica según reglas del modelo (p.ej. VIP/FRECUENTE/NUEVO).
+
+  - name: dim_products
+    description: >
+      Dimensión de producto a nivel de `product_id`. Concatena información de producto,
+      marca y categoría, e incorpora un precio unitario derivado.
+    columns:
+      - name: product_id
+        description: "Identificador único del producto."
+      - name: product_name
+        description: "Nombre del producto (normalizado a mayúsculas)."
+      - name: brand_name
+        description: "Nombre de marca (normalizado a mayúsculas)."
+      - name: category_name
+        description: "Nombre de categoría (normalizado a mayúsculas)."
+      - name: unit_price
+        description: >
+          Precio unitario derivado como AVG de list_price a nivel de producto
+          (agregando las variantes).
+
+  - name: fct_sales
+    description: >
+      Hecho de ventas orientado a análisis de negocio. Modela cada línea de venta
+      a nivel `sale_item_id` (incremental en Silver) y asocia devoluciones para
+      poder calcular ventas netas.
+    columns:
+      - name: sale_item_id
+        description: "Grano de la fact: identificador estable de la línea de venta."
+      - name: sale_id
+        description: "Identificador de la venta/cabecera."
+      - name: sale_date
+        description: "Fecha de la venta (derivada de stg_sales.sale_ts)."
+      - name: store_id
+        description: "Identificador de tienda donde ocurre la venta."
+      - name: customer_id
+        description: "Identificador de cliente. Puede ser NULL si no existe identificación."
+      - name: product_id
+        description: >
+          Identificador de producto (derivado desde `product_variant_id` vía stg_product_variants).
+      - name: product_variant_id
+        description: "Identificador de la variante (producto + color + talla)."
+      - name: quantity
+        description: "Cantidad vendida en la línea."
+      - name: unit_price
+        description: "Precio unitario final de la línea (unit_final_price)."
+      - name: amount_refunded
+        description: >
+          Importe reembolsado agregado para esa línea de venta (suma de line_refund_amount).
+      - name: is_returned
+        description: "TRUE si la línea tiene devolución asociada (amount_refunded > 0)."
+      - name: gross_amount
+        description: "Importe bruto de la línea: quantity * unit_price."
+
+  - name: fct_returns
+    description: >
+      Hecho de devoluciones a nivel de `return_id`. Agrega información de items
+      y refunds para obtener montos totales y fecha del último reembolso.
+    columns:
+      - name: return_id
+        description: "Grano de la fact: identificador estable de la devolución."
+      - name: sale_id
+        description: "Venta asociada a la devolución."
+      - name: quantity_returned
+        description: "Cantidad total devuelta (suma de quantity en stg_return_items)."
+      - name: return_reason
+        description: "Motivo de la devolución (normalizado a mayúsculas)."
+      - name: return_status
+        description: "Estado de la devolución (normalizado a mayúsculas)."
+      - name: total_refunded_amount
+        description: >
+          Importe total reembolsado. Prioriza el agregado desde items (line_refund_amount);
+          si no existe, cae a agregados de refunds o al valor del header.
+      - name: refund_date
+        description: "Fecha del último reembolso agregada (MAX refund_date)."
+      - name: return_date
+        description: "Fecha de la devolución (return_date en stg_returns)."
+
+  - name: daily_store_performance
+    description: >
+      Agregado diario por tienda derivado de `fct_sales`. Expone KPIs de negocio para
+      medir ventas, devoluciones, net revenue y tasa de devolución.
+    columns:
+      - name: sale_date
+        description: "Fecha del agregado (grano con store_id)."
+      - name: store_id
+        description: "Identificador de tienda del agregado (grano con sale_date)."
+      - name: total_transactions
+        description: "Número de ventas/tickets distintos (COUNT DISTINCT sale_id)."
+      - name: total_units_sold
+        description: "Total de unidades vendidas agregadas."
+      - name: gross_revenue
+        description: "Ingresos brutos agregados (SUM(quantity * unit_price))."
+      - name: total_refunds
+        description: "Total de reembolsos (SUM(amount_refunded))."
+      - name: net_revenue
+        description: "Venta neta: gross_revenue - total_refunds."
+      - name: return_rate
+        description: >
+          Tasa de devolución calculada como DIV0(SUM(IFF(is_returned,1,0)) / COUNT(*)).
+          Representa la proporción de líneas con devolución en el período.
+
