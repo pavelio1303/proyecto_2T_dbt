@@ -142,3 +142,13 @@ Preguntas clave que hice y cómo impactaron decisiones de modelado:
 - ¿Qué entidad histórica vale la pena snapshotear para análisis de stock?
   - Decisión: snapshot de inventario con `unique_key=inventory_id` y control sobre `available_qty`, para detectar cambios en disponibilidad.
 
+<<<<<<< HEAD
+=======
+### Resources:
+- Learn more about dbt [in the docs](https://docs.getdbt.com/docs/introduction)
+- Check out [Discourse](https://discourse.getdbt.com/) for commonly asked questions and answers
+- Join the [dbt community](https://getdbt.com/community) to learn from other analytics engineers
+- Find [dbt events](https://events.getdbt.com) near you
+- Check out [the blog](https://blog.getdbt.com/) for the latest news on dbt's development and best practices
+- HOLA
+>>>>>>> 37f3ef439b2ed3684381032e1fdf571bbfb7a0ec
