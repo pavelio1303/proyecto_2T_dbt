@@ -3,13 +3,15 @@ SELECT
     s.store_id,
     COUNT(DISTINCT s.sale_id) AS total_transactions,
     SUM(s.quantity) AS total_units_sold,
-    -- Venta Bruta
-    SUM(s.quantity * s.unit_price) AS gross_revenue,
-    -- Impacto de Devoluciones
-    SUM(s.amount_refunded) AS total_refunds,
-    -- VENTA NETA FINAL (Requisito GPT Cliente)
-    SUM(s.quantity * s.unit_price) - SUM(s.amount_refunded) AS net_revenue,
-    -- Tasa de devolución (KPI extra para nota)
-    DIV0(SUM(IFF(s.is_returned, 1, 0)), COUNT(*)) AS return_rate
+    -- Venta bruta (precio lista).
+    SUM(s.gross_amount) AS gross_sales_amount,
+    -- Venta neta comercial (sin devoluciones).
+    SUM(s.net_sales_before_returns) AS net_sales_before_returns,
+    -- Devoluciones.
+    SUM(s.amount_refunded) AS refunded_amount,
+    -- Venta neta real (post-devoluciones).
+    SUM(s.net_sales_after_returns) AS net_sales_after_returns,
+    -- Tasa de devolución por importe.
+    DIV0(SUM(s.amount_refunded), SUM(s.net_sales_before_returns)) AS return_rate_amount
 FROM {{ ref('fct_sales') }} s
 GROUP BY 1, 2

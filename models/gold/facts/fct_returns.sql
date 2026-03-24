@@ -15,7 +15,7 @@ return_items_agg AS (
         return_id,
         SUM(quantity) AS quantity_returned,
         SUM(line_refund_amount) AS items_refunded_amount
-    FROM {{ ref('stg_return_items') }}
+    FROM {{ ref('fct_return_items') }}
     GROUP BY 1
 ),
 
@@ -29,6 +29,8 @@ refunds_agg AS (
 ),
 
 final AS (
+    -- Fact derivada a nivel cabecera de devolución (1 fila = 1 return_id).
+    -- La fact principal para análisis de devoluciones es fct_return_items.
     SELECT
         rh.return_id,
         rh.sale_id,

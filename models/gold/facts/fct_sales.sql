@@ -37,12 +37,22 @@ final AS (
         pm.product_id,
         si.product_variant_id,
         si.quantity,
-        -- Precio unitario final ya descontado (por línea/ticket)
+        -- Precio unitario final ya descontado (venta neta comercial por línea).
         si.unit_final_price AS unit_price,
+        -- Precio unitario de lista (antes de descuento).
+        si.unit_list_price,
+        -- Descuento unitario aplicado.
+        si.unit_discount_amount,
         COALESCE(r.amount_refunded, 0) AS amount_refunded,
         (COALESCE(r.amount_refunded, 0) > 0) AS is_returned,
-        -- Importe bruto por línea (antes de devoluciones)
-        (si.quantity * si.unit_final_price) AS gross_amount
+        -- Importe de lista por línea (antes de descuentos y devoluciones).
+        (si.quantity * si.unit_list_price) AS gross_amount,
+        -- Descuento total de la línea.
+        (si.quantity * si.unit_discount_amount) AS discount_amount,
+        -- Venta neta comercial: venta bruta - descuentos (sin devoluciones).
+        (si.quantity * si.unit_final_price) AS net_sales_before_returns,
+        -- Venta neta real: venta neta comercial - devoluciones.
+        ((si.quantity * si.unit_final_price) - COALESCE(r.amount_refunded, 0)) AS net_sales_after_returns
     FROM sale_items si
     LEFT JOIN sales_header sh
         ON si.sale_id = sh.sale_id
